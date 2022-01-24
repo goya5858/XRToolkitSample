@@ -6,29 +6,31 @@ using UnityEngine.XR;
 public class UIOpen : MonoBehaviour
 {
     [SerializeField]
-    private XRNode controllerType = XRNode.RightHand; //デフォルトではLeftHandにする　右手にアタッチされたときは動的に変更される
-    //List<XRNodeState> nodeStatesCache = new List<XRNodeState>(); //DeviceStateをすべて入手する
+    private XRNode controllerType = XRNode.RightHand; //デフォルトではRightHandにする
 
     // このオブジェクトが保持しているコントローラー
     private InputDevice controller;
+    bool controllerAtached = false;
 
+    // コントローラーの速度関係の変数
     InputFeatureUsage<Vector3> deviceVelocity = CommonUsages.deviceVelocity;
     Vector3 deviceVelocityValue;
     public float velocityThreshold = 0.8f;
 
+    // コントローラーのボタン関係の変数
     InputFeatureUsage<float> grip = CommonUsages.grip;
     float gripValue;
     InputFeatureUsage<bool> thumbTouch = CommonUsages.primary2DAxisTouch;
     bool thumbTouchValue;
 
-    bool controllerAtached = false;
+    public  GameObject UICanvas;
+    private GameObject clonedUI;
 
-    public GameObject UICanvas;
-    GameObject clonedUI;
-    public GameObject UIPosOffset;
-    public GameObject UIAngleOffset;
-    bool isShowUI = false;
-    public GameObject IndexFinger;
+    public  GameObject UIPosOffset;
+    public  GameObject UIAngleOffset;
+    bool    isShowUI = false;
+
+    //public  GameObject IndexFinger;
     
 
     private void getController()
@@ -58,34 +60,28 @@ public class UIOpen : MonoBehaviour
 
     private void Update()
     {
-        //if (!controllerAtached)
-        //{
-        //    getController();
-        //    return;
-        //}
-        if (IndexFinger.GetComponent<TrailRenderer>().enabled)
+        if (!controllerAtached)
         {
-            IndexFinger.GetComponent<TrailRenderer>().enabled = false;
+            getController();
+            return;
         }
+
+        //if (IndexFinger.GetComponent<TrailRenderer>().enabled)
+        //{
+        //    IndexFinger.GetComponent<TrailRenderer>().enabled = false;
+        //}
 
         controller.TryGetFeatureValue(grip, out gripValue);
         controller.TryGetFeatureValue(thumbTouch, out thumbTouchValue);
         if (gripValue > 0.5f && thumbTouchValue)
         {
-            //InputTracking.GetNodeStates(nodeStatesCache);
-            //XRNodeState nodeState = nodeStatesCache[4];//LeftHand
-            //XRNodeState nodeState = nodeStatesCache[5];//RightHand
-            //Debug.Log( nodeState.TryGetAcceleration(out deviceAccelerationValue) );
-
-            //controller.TryGetFeatureValue(deviceAcceleration, out deviceAccelerationValue);
             controller.TryGetFeatureValue(deviceVelocity, out deviceVelocityValue);
-            Debug.Log(deviceVelocityValue);
 
             //Trailのオン
-            IndexFinger.GetComponent<TrailRenderer>().enabled = true;
+            //IndexFinger.GetComponent<TrailRenderer>().enabled = true;
             if (deviceVelocityValue.y < -velocityThreshold && !isShowUI)
             {
-                Vector3 popPos   = UIPosOffset.transform.position;
+                Vector3    popPos   = UIPosOffset.transform.position;
                 Quaternion popRot   = UIPosOffset.transform.rotation;
                 //Transform popTrans = UIPosOffset.transform;
                 popPos.y += 0.3f;
